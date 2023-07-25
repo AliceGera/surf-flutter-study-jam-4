@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shake/shake.dart';
+import 'package:text_to_speech/text_to_speech.dart';
 import 'bloc/magic_ball_bloc.dart';
 
 class MagicBallScreen extends StatefulWidget {
@@ -25,7 +26,9 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
     ),
   );
 
+  bool isMusicAllow = true;
   double shadowProportion = 1;
+  final tts = TextToSpeech();
 
   @override
   void initState() {
@@ -67,13 +70,34 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                 shadowProportion = _controller.value;
               });
             });
+          } else if (state is MagicBallSuccessState && isMusicAllow) {
+            tts.speak(state.data.reading);
           }
         },
         builder: (context, state) {
           final isFailed = state is MagicBallFailedState;
           final isLoading = state is MagicBallLoadingState;
-          // final isFirstLoading=true;
+
           return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              actions: [
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      isMusicAllow = !isMusicAllow;
+                    });
+                  },
+                  child: Icon(
+                    size: 30,
+                    isMusicAllow ? Icons.music_note : Icons.music_off,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 20),
+              ],
+            ),
             body: Container(
               width: double.infinity,
               decoration: const BoxDecoration(
