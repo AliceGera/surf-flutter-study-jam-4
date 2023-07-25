@@ -197,9 +197,9 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                   width: smallStarSize,
                                   child: Text(
                                     state is MagicBallSuccessState ? state.data.reading : '',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 32,
+                                      fontSize: isMobile ? 32 : 56,
                                       height: 1.125,
                                     ),
                                     maxLines: 2,
