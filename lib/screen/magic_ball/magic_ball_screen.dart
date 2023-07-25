@@ -186,7 +186,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withOpacity(.8),
-                                          blurRadius: 30,
+                                          blurRadius: isMobile ? 30 : 60,
                                           offset: const Offset(1, 1), // Shadow position
                                         ),
                                       ],
