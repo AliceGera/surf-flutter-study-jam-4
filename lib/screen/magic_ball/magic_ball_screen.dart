@@ -45,7 +45,9 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.shortestSide < 600;
     final size = MediaQuery.of(context).size;
+    //for adaptation when phone is vertical or horizontal
     final isWidthApplied = size.height * 0.393 < size.width && size.width < size.height;
+    //position of ball in mobile and tablets
     final centerOfBall = size.height * (isMobile ? 0.5 : 0.3);
     final imageSize = !isWidthApplied ? size.height * (isMobile ? 0.5 : 0.7) : size.width;
     final bigStarSize = !isWidthApplied ? size.height * (isMobile ? 0.3 : 0.43) : size.width * 0.61;
