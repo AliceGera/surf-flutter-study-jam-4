@@ -1,5 +1,14 @@
-class MagicBallScreenData{
+class MagicBallScreenData {
   final String reading;
+  final String imageBall;
 
-  MagicBallScreenData(this.reading);
+  MagicBallScreenData(
+    this.reading,
+    this.imageBall,
+  );
+
+  static MagicBallScreenData init() => MagicBallScreenData(
+        '',
+        '',
+      );
 }

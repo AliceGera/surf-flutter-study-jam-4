@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shake/shake.dart';
 import 'package:text_to_speech/text_to_speech.dart';
+import '../bloc/theme_bloc.dart';
 import 'bloc/magic_ball_bloc.dart';
 
 class MagicBallScreen extends StatefulWidget {
@@ -29,6 +31,8 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
   bool isMusicAllow = true;
   double shadowProportion = 1;
   final tts = TextToSpeech();
+
+  bool isThemeChanged = true;
 
   @override
   void initState() {
@@ -83,8 +87,20 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
+              elevation: 0,
               backgroundColor: Colors.transparent,
               actions: [
+                BlocBuilder<ThemeBloc, ThemeData>(
+                  builder: (context, themeData) {
+                    return CupertinoSwitch(
+                      value: themeData == BlocProvider.of<ThemeBloc>(context).dark,
+                      onChanged: (bool val) {
+                        BlocProvider.of<MagicBallBloc>(context).add(ChangeImageMagicBallScreenEvent());
+                        BlocProvider.of<ThemeBloc>(context).add(ThemeSwitchEvent());
+                      },
+                    );
+                  },
+                ),
                 InkWell(
                   onTap: () {
                     setState(() {
@@ -102,13 +118,13 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
             ),
             body: Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFF1E0340),
-                    Colors.black,
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).scaffoldBackgroundColor,
                   ],
                 ),
               ),
@@ -142,12 +158,12 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                 children: <Widget>[
                                   Image.asset(
                                     'assets/images/big_ellipse.png',
-                                    color: isFailed ? Colors.red : null,
+                                    color: isFailed ? const Color(0xFFDA1319) : null,
                                     width: bigEllipseSize * shadowProportion,
                                   ),
                                   Image.asset(
                                     'assets/images/small_ellipse.png',
-                                    color: isFailed ? Colors.red : null,
+                                    color: isFailed ? const Color(0xFFDA1319) : null,
                                     width: smallEllipseSize * shadowProportion,
                                   ),
                                 ],
@@ -168,11 +184,12 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                             child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
-                                Image.asset(
-                                  'assets/images/ball.png',
-                                  height: imageSize,
-                                  width: imageSize,
-                                ),
+                                if (BlocProvider.of<MagicBallBloc>(context).screenData.imageBall.isNotEmpty)
+                                  Image.asset(
+                                    BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
+                                    height: imageSize,
+                                    width: imageSize,
+                                  ),
                                 AnimatedOpacity(
                                   duration: const Duration(milliseconds: 500),
                                   opacity: isFailed ? 1 : 0,
@@ -183,7 +200,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                       borderRadius: BorderRadius.circular(smallStarSize / 2),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.red.withOpacity(.8),
+                                          color: const Color(0xFFDA1319),
                                           blurRadius: isMobile ? 30 : 60,
                                           offset: const Offset(1, 1), // Shadow position
                                         ),
