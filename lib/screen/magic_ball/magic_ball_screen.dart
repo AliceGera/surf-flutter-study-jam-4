@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,7 +15,7 @@ class MagicBallScreen extends StatefulWidget {
   MagicBallScreenState createState() => MagicBallScreenState();
 }
 
-class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProviderStateMixin {
+class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 2),
     vsync: this,
@@ -27,21 +29,27 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
       curve: Curves.linear,
     ),
   );
-
+  late final _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
   bool isMusicAllow = true;
   double shadowProportion = 1;
   final tts = TextToSpeech();
 
   bool isThemeChanged = true;
+  Color boxShadowColor = Colors.transparent;
 
   @override
   void initState() {
     super.initState();
+    _animationController.forward();
   }
 
   @override
   void dispose() {
     super.dispose();
+    _animationController.dispose();
     _controller.dispose();
   }
 
@@ -83,6 +91,12 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
         builder: (context, state) {
           final isFailed = state is MagicBallFailedState;
           final isLoading = state is MagicBallLoadingState;
+
+          if (state is MagicBallInitialState && state.data != null) {
+            boxShadowColor = state.data?.color ?? Colors.transparent;
+          } else if (state is MagicBallSuccessState) {
+            boxShadowColor = state.data.color;
+          }
 
           return Scaffold(
             extendBodyBehindAppBar: true,
@@ -213,10 +227,19 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                   height: smallStarSize,
                                   width: smallStarSize,
                                 ),
-                                Image.asset(
-                                  'assets/images/star.png',
-                                  height: bigStarSize,
-                                  width: bigStarSize,
+                                AnimatedBuilder(
+                                  animation: _animationController,
+                                  child: Image.asset(
+                                    'assets/images/star.png',
+                                    height: bigStarSize,
+                                    width: bigStarSize,
+                                  ),
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle: 0.5 * pi * _animationController.value,
+                                      child: child,
+                                    );
+                                  },
                                 ),
                                 AnimatedOpacity(
                                   duration: const Duration(milliseconds: 500),
@@ -228,7 +251,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with SingleTickerProvi
                                       borderRadius: BorderRadius.circular(smallStarSize / 2),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withOpacity(.8),
+                                          color: boxShadowColor,
                                           blurRadius: isMobile ? 30 : 60,
                                           offset: const Offset(1, 1), // Shadow position
                                         ),
