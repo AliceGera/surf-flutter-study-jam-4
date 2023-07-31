@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shake/shake.dart';
 import 'package:text_to_speech/text_to_speech.dart';
 import '../bloc/theme_bloc.dart';
@@ -222,15 +223,16 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                                     ),
                                   ),
                                 ),
-                                Image.asset(
-                                  'assets/images/small_star.png',
+
+                                SvgPicture.asset(
+                                  'assets/images/small_star.svg',
                                   height: smallStarSize,
                                   width: smallStarSize,
                                 ),
                                 AnimatedBuilder(
                                   animation: _animationController,
-                                  child: Image.asset(
-                                    'assets/images/star.png',
+                                  child: SvgPicture.asset(
+                                    'assets/images/star.svg',
                                     height: bigStarSize,
                                     width: bigStarSize,
                                   ),

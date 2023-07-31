@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 import 'package:surf_practice_magic_ball/screen/magic_ball/data/magic_ball_screen_data.dart';
 import 'package:surf_practice_magic_ball/screen/magic_ball/repository/magic_ball_repository.dart';
 
