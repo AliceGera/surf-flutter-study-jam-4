@@ -1,13 +1,15 @@
 import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get_it/get_it.dart';
 import 'package:shake/shake.dart';
 import 'package:text_to_speech/text_to_speech.dart';
+import '../../../domain/interactor/magic_ball_interactor.dart';
 import '../bloc/theme_bloc.dart';
 import 'bloc/magic_ball_bloc.dart';
+import 'magic_ball_view_mapper.dart';
 
 class MagicBallScreen extends StatefulWidget {
   const MagicBallScreen({Key? key}) : super(key: key);
@@ -34,6 +36,25 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
     vsync: this,
     duration: const Duration(milliseconds: 500),
   );
+
+  late final AnimationController _controllerShake = AnimationController(
+    duration: const Duration(seconds: 1),
+    vsync: this,
+  )..repeat(reverse: true);
+  late final Animation<Offset> _offsetAnimationShake = Tween<Offset>(
+    begin: const Offset(-0.05, 0.0),
+    end: const Offset(0.05, 0.0),
+  ).animate(
+    CurvedAnimation(
+      parent: _controllerShake,
+      curve: Curves.easeInOutBack,
+    ),
+  );
+  late final _animationControllerShake = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 100),
+  );
+
   bool isMusicAllow = true;
   double shadowProportion = 1;
   final tts = TextToSpeech();
@@ -44,7 +65,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
   @override
   void initState() {
     super.initState();
-    _animationController.forward();
+    _animationController.repeat();
   }
 
   @override
@@ -69,7 +90,10 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
     final bigEllipseSize = imageSize * 0.656;
 
     return BlocProvider(
-      create: (context) => MagicBallBloc()..add(InitMagicBallScreenEvent()),
+      create: (context) => MagicBallBloc(
+        GetIt.I.get<MagicBallInteractor>(),
+        GetIt.I.get<MagicBallViewMapper>(),
+      )..add(InitMagicBallScreenEvent()),
       child: BlocConsumer<MagicBallBloc, MagicBallState>(
         listener: (context, state) {
           if (state is MagicBallInitialState) {
@@ -193,97 +217,116 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                     child: Column(
                       children: [
                         SizedBox(height: (centerOfBall - (imageSize * 0.5)).abs()),
-                        InkWell(
-                          child: SlideTransition(
-                            position: _offsetAnimation,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: <Widget>[
-                                if (BlocProvider.of<MagicBallBloc>(context).screenData.imageBall.isNotEmpty)
-                                  Image.asset(
-                                    BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
-                                    height: imageSize,
-                                    width: imageSize,
+                        Builder(builder: (context) {
+                          final mainWidget = InkWell(
+                            splashColor: Colors.transparent,
+                            child: SlideTransition(
+                              position: _offsetAnimation,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: <Widget>[
+                                  if (BlocProvider.of<MagicBallBloc>(context).screenData.imageBall.isNotEmpty)
+                                    Image.asset(
+                                      BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
+                                      height: imageSize,
+                                      width: imageSize,
+                                    ),
+                                  AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 500),
+                                    opacity: isFailed ? 1 : 0,
+                                    child: Container(
+                                      height: smallStarSize,
+                                      width: smallStarSize,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(smallStarSize / 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFFDA1319),
+                                            blurRadius: isMobile ? 30 : 60,
+                                            offset: const Offset(1, 1), // Shadow position
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 500),
-                                  opacity: isFailed ? 1 : 0,
-                                  child: Container(
-                                    height: smallStarSize,
+                                  AnimatedBuilder(
+                                    animation: _animationController,
+                                    child: SvgPicture.asset(
+                                      'assets/images/small_star.svg',
+                                      height: smallStarSize,
+                                      width: smallStarSize,
+                                    ),
+                                    builder: (context, child) {
+                                      return Transform.rotate(
+                                        angle: 0.5 * pi * _animationController.value,
+                                        child: child,
+                                      );
+                                    },
+                                  ),
+                                  AnimatedBuilder(
+                                    animation: _animationController,
+                                    child: SvgPicture.asset(
+                                      'assets/images/star.svg',
+                                      height: bigStarSize,
+                                      width: bigStarSize,
+                                    ),
+                                    builder: (context, child) {
+                                      return Transform.rotate(
+                                        angle: 0.5 * pi * _animationController.value,
+                                        child: child,
+                                      );
+                                    },
+                                  ),
+                                  AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 500),
+                                    opacity: isLoading ? 1 : 0,
+                                    child: Container(
+                                      height: smallStarSize,
+                                      width: smallStarSize,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(smallStarSize / 2),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: boxShadowColor,
+                                            blurRadius: isMobile ? 30 : 60,
+                                            offset: const Offset(1, 1), // Shadow position
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
                                     width: smallStarSize,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(smallStarSize / 2),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFFDA1319),
-                                          blurRadius: isMobile ? 30 : 60,
-                                          offset: const Offset(1, 1), // Shadow position
-                                        ),
-                                      ],
+                                    child: Text(
+                                      state is MagicBallSuccessState ? state.data.reading : '',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: isMobile ? 32 : 56,
+                                        height: 1.125,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
                                     ),
-                                  ),
-                                ),
-
-                                SvgPicture.asset(
-                                  'assets/images/small_star.svg',
-                                  height: smallStarSize,
-                                  width: smallStarSize,
-                                ),
-                                AnimatedBuilder(
-                                  animation: _animationController,
-                                  child: SvgPicture.asset(
-                                    'assets/images/star.svg',
-                                    height: bigStarSize,
-                                    width: bigStarSize,
-                                  ),
-                                  builder: (context, child) {
-                                    return Transform.rotate(
-                                      angle: 0.5 * pi * _animationController.value,
-                                      child: child,
-                                    );
-                                  },
-                                ),
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 500),
-                                  opacity: isLoading ? 1 : 0,
-                                  child: Container(
-                                    height: smallStarSize,
-                                    width: smallStarSize,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(smallStarSize / 2),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: boxShadowColor,
-                                          blurRadius: isMobile ? 30 : 60,
-                                          offset: const Offset(1, 1), // Shadow position
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: smallStarSize,
-                                  child: Text(
-                                    state is MagicBallSuccessState ? state.data.reading : '',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: isMobile ? 32 : 56,
-                                      height: 1.125,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                )
-                              ],
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                          onTap: () {
-                            if (!isLoading) {
-                              BlocProvider.of<MagicBallBloc>(context).add(LoadMagicBallScreenEvent());
-                            }
-                          },
-                        ),
+                            onTap: () {
+                              if (!isLoading) {
+                                BlocProvider.of<MagicBallBloc>(context).add(LoadMagicBallScreenEvent());
+                              }
+                            },
+                          );
+                          if (state is MagicBallLoadingState) {
+                            return SlideTransition(
+                              position: _offsetAnimationShake,
+                              child: mainWidget,
+                            );
+                          } else {
+                            return mainWidget;
+                          }
+                        }),
                       ],
                     ),
                   ),

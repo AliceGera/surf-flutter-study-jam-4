@@ -9,12 +9,12 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeData> {
     primaryColor: const Color(0xFF100C2C),
     scaffoldBackgroundColor: const Color(0xFF000002),
   );
-  final light = ThemeData(
+  static ThemeData light = ThemeData(
     primaryColor: const Color(0x00ffffff),
     scaffoldBackgroundColor: const Color(0xFFD3D3FF),
   );
 
-  ThemeBloc() : super(ThemeData.light()) {
+  ThemeBloc() : super(light) {
     //when app is started
     on<InitialThemeSetEvent>((event, emit) async {
       final bool hasDarkTheme = await isDark();

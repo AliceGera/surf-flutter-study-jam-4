@@ -1,9 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:surf_practice_magic_ball/screen/magic_ball/data/magic_ball_screen_data.dart';
-import 'package:surf_practice_magic_ball/screen/magic_ball/repository/magic_ball_repository.dart';
-
+import '../../../../domain/interactor/magic_ball_interactor.dart';
 import '../../bloc/theme_bloc.dart';
+import '../data/magic_ball_screen_data.dart';
+import '../magic_ball_view_mapper.dart';
 
 part 'magic_ball_event.dart';
 
@@ -11,10 +11,13 @@ part 'magic_ball_state.dart';
 
 class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
   MagicBallScreenData screenData = MagicBallScreenData.init();
+  final MagicBallInteractor interactor;
+  final MagicBallViewMapper viewMapper;
 
-  MagicBallBloc() : super(MagicBallInitialState()) {
-    final MagicBallRepository repository = MagicBallRepository();
-
+  MagicBallBloc(
+    this.interactor,
+    this.viewMapper,
+  ) : super(MagicBallInitialState()) {
     const String imageLightBall = 'assets/images/ball_light.png';
     const String imageDarkBall = 'assets/images/ball.png';
     final Color lightColorBall = Colors.white.withOpacity(0.8);
@@ -33,9 +36,13 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
     on<LoadMagicBallScreenEvent>((event, emit) async {
       emit(MagicBallLoadingState());
       try {
-        final answer = await repository.getMagicBallAnswer();
+        final data = await interactor.getMagicBall();
+        screenData = viewMapper.toScreenData(
+          screenData,
+          data,
+        );
         screenData = MagicBallScreenData(
-          answer.reading ?? '',
+          screenData.reading ?? '',
           screenData.imageBall,
           screenData.color,
         );
@@ -55,7 +62,7 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {
-        // emit(MagicBallFailedState(error.toString()));
+        emit(MagicBallFailedState(error.toString()));
       }
     });
   }

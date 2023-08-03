@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class MagicBallScreenData {
-  final String reading;
-  final String imageBall;
+  late final String reading;
+  late final String imageBall;
   final Color color;
 
   MagicBallScreenData(

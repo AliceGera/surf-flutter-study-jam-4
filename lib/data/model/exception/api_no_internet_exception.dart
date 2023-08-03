@@ -1,0 +1,1 @@
+class ApiNoInternetException implements Exception {}
