@@ -8,3 +8,9 @@ class InitMagicBallScreenEvent extends MagicBallEvent {}
 class LoadMagicBallScreenEvent extends MagicBallEvent {}
 
 class ChangeImageMagicBallScreenEvent extends MagicBallEvent {}
+
+class ChangeImageMagicBallColorScreenEvent extends MagicBallEvent {
+  final Color ballColor;
+
+  ChangeImageMagicBallColorScreenEvent(this.ballColor);
+}

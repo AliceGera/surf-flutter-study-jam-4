@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shake/shake.dart';
@@ -50,10 +51,6 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
       curve: Curves.easeInOutBack,
     ),
   );
-  late final _animationControllerShake = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 100),
-  );
 
   bool isMusicAllow = true;
   double shadowProportion = 1;
@@ -73,6 +70,14 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
     super.dispose();
     _animationController.dispose();
     _controller.dispose();
+  }
+
+  bool isChooseColor = false;
+  Color pickerColor = const Color(0xff443a49);
+  Color currentColor = const Color(0xff443a49);
+
+  void changeColor(Color color) {
+    setState(() => pickerColor = color);
   }
 
   @override
@@ -149,6 +154,40 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                   child: Icon(
                     size: 30,
                     isMusicAllow ? Icons.music_note : Icons.music_off,
+                    color: Colors.white,
+                  ),
+                ),
+                InkWell(
+                  onTap: () {
+                    final bloc = BlocProvider.of<MagicBallBloc>(context);
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Pick a color!'),
+                            content: SingleChildScrollView(
+                              child: ColorPicker(
+                                pickerColor: pickerColor,
+                                onColorChanged: changeColor,
+                              ),
+                            ),
+                            actions: <Widget>[
+                              ElevatedButton(
+                                child: const Text('Got it'),
+                                onPressed: () {
+                                  isChooseColor = true;
+                                  currentColor = pickerColor;
+                                  bloc.add(ChangeImageMagicBallColorScreenEvent(currentColor));
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        });
+                  },
+                  child: const Icon(
+                    size: 30,
+                    /*isMusicAllow ? */ Icons.settings_outlined /*: Icons.music_off*/,
                     color: Colors.white,
                   ),
                 ),
@@ -230,6 +269,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                                       BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
                                       height: imageSize,
                                       width: imageSize,
+                                      color: (state is MagicBallSuccessState && isChooseColor) ? state.data.chooseColorImageBall : null,
                                     ),
                                   AnimatedOpacity(
                                     duration: const Duration(milliseconds: 500),

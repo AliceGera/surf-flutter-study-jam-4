@@ -22,13 +22,14 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
     const String imageDarkBall = 'assets/images/ball.png';
     final Color lightColorBall = Colors.white.withOpacity(0.8);
     final Color darkColorBall = Colors.black.withOpacity(0.8);
-
+    final Color colorBall;
     on<InitMagicBallScreenEvent>((event, emit) async {
       final hasDarkTheme = await isDark();
       screenData = MagicBallScreenData(
         screenData.reading,
         hasDarkTheme ? imageDarkBall : imageLightBall,
         hasDarkTheme ? darkColorBall : lightColorBall,
+        screenData.chooseColorImageBall,
       );
       emit(MagicBallInitialState(data: screenData));
     });
@@ -45,6 +46,7 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
           screenData.reading ?? '',
           screenData.imageBall,
           screenData.color,
+          screenData.chooseColorImageBall,
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {
@@ -59,6 +61,21 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
           screenData.reading,
           hasDarkTheme ? imageLightBall : imageDarkBall,
           hasDarkTheme ? lightColorBall : darkColorBall,
+          screenData.chooseColorImageBall,
+        );
+        emit(MagicBallSuccessState(screenData));
+      } catch (error) {
+        emit(MagicBallFailedState(error.toString()));
+      }
+    });
+
+    on<ChangeImageMagicBallColorScreenEvent>((event, emit) async {
+      try {
+        screenData = MagicBallScreenData(
+          screenData.reading,
+          screenData.imageBall,
+          screenData.color,
+          event.ballColor,
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {
