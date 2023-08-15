@@ -11,6 +11,7 @@ import '../../../domain/interactor/magic_ball_interactor.dart';
 import '../bloc/theme_bloc.dart';
 import 'bloc/magic_ball_bloc.dart';
 import 'magic_ball_view_mapper.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class MagicBallScreen extends StatefulWidget {
   const MagicBallScreen({Key? key}) : super(key: key);
@@ -75,6 +76,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
   bool isChooseColor = false;
   Color pickerColor = const Color(0xff443a49);
   Color currentColor = const Color(0xff443a49);
+  bool isLight = true;
 
   void changeColor(Color color) {
     setState(() => pickerColor = color);
@@ -134,60 +136,138 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
               elevation: 0,
               backgroundColor: Colors.transparent,
               actions: [
-                BlocBuilder<ThemeBloc, ThemeData>(
-                  builder: (context, themeData) {
-                    return CupertinoSwitch(
-                      value: themeData == BlocProvider.of<ThemeBloc>(context).dark,
-                      onChanged: (bool val) {
-                        BlocProvider.of<MagicBallBloc>(context).add(ChangeImageMagicBallScreenEvent());
-                        BlocProvider.of<ThemeBloc>(context).add(ThemeSwitchEvent());
-                      },
-                    );
-                  },
-                ),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      isMusicAllow = !isMusicAllow;
-                    });
-                  },
-                  child: Icon(
-                    size: 30,
-                    isMusicAllow ? Icons.music_note : Icons.music_off,
-                    color: Colors.white,
-                  ),
-                ),
                 InkWell(
                   onTap: () {
                     final bloc = BlocProvider.of<MagicBallBloc>(context);
+                    final blocTheme = BlocProvider.of<ThemeBloc>(context);
                     showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Pick a color!'),
-                            content: SingleChildScrollView(
-                              child: ColorPicker(
-                                pickerColor: pickerColor,
-                                onColorChanged: changeColor,
+                      context: context,
+                      builder: (context) {
+                        bool isMusicEnable = isMusicAllow;
+                        return StatefulBuilder(
+                          builder: (stfContext, stfSetState) {
+                            return AlertDialog(
+                              title: const Text('Change settings!'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        child: Text(
+                                          isLight ? 'light' : 'dark',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: size.width * 0.1),
+                                      BlocBuilder<ThemeBloc, ThemeData>(
+                                        builder: (context, themeData) {
+                                          return CupertinoSwitch(
+                                            value: themeData == blocTheme.dark,
+                                            onChanged: (bool val) {
+                                              val ? (isLight = true) : (isLight = false);
+                                              bloc.add(ChangeImageMagicBallScreenEvent());
+                                              blocTheme.add(ThemeSwitchEvent());
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              stfSetState(() {
+                                                isMusicEnable = !isMusicAllow;
+                                                isMusicAllow = !isMusicAllow;
+                                              });
+                                            },
+                                            child: Icon(
+                                              size: 30,
+                                              isMusicEnable ? Icons.music_note : Icons.music_off,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          SizedBox(width: size.width * 0.1),
+                                          Text(
+                                            isMusicEnable ? 'On' : 'Off',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: const Text('Pick a color!'),
+                                                    content: SingleChildScrollView(
+                                                      child: ColorPicker(
+                                                        pickerColor: pickerColor,
+                                                        onColorChanged: changeColor,
+                                                      ),
+                                                    ),
+                                                    actions: <Widget>[
+                                                      ElevatedButton(
+                                                        child: const Text('Got it'),
+                                                        onPressed: () {
+                                                          isChooseColor = true;
+                                                          currentColor = pickerColor;
+                                                          bloc.add(ChangeImageMagicBallColorScreenEvent(currentColor));
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: const Icon(
+                                              size: 30,
+                                              Icons.settings_outlined,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                          SizedBox(width: size.width * 0.1),
+                                          const Text(
+                                            'Change color of ball',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  ElevatedButton(
+                                    child: const Text('ok'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
                               ),
-                            ),
-                            actions: <Widget>[
-                              ElevatedButton(
-                                child: const Text('Got it'),
-                                onPressed: () {
-                                  isChooseColor = true;
-                                  currentColor = pickerColor;
-                                  bloc.add(ChangeImageMagicBallColorScreenEvent(currentColor));
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ],
-                          );
-                        });
+                            );
+                          },
+                        );
+                      },
+                    );
                   },
                   child: const Icon(
                     size: 30,
-                    /*isMusicAllow ? */ Icons.settings_outlined /*: Icons.music_off*/,
+                    Icons.settings_outlined,
                     color: Colors.white,
                   ),
                 ),
@@ -337,16 +417,27 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                                   ),
                                   SizedBox(
                                     width: smallStarSize,
-                                    child: Text(
-                                      state is MagicBallSuccessState ? state.data.reading : '',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: isMobile ? 32 : 56,
-                                        height: 1.125,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
+                                    child: AnimatedTextKit(
+                                      animatedTexts: [
+                                        TypewriterAnimatedText(
+                                          state is MagicBallSuccessState ? state.data.reading : '',
+                                          textStyle: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: isMobile ? 32 : 56,
+                                            height: 1.125,
+                                            //maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),speed: const Duration(milliseconds: 150),
+
+                                          textAlign: TextAlign.center,
+
+                                        ),
+                                      ],
+                                      totalRepeatCount: 1,
+
+                                      onTap: () {
+                                        print("Tap Event");
+                                      },
                                     ),
                                   )
                                 ],
