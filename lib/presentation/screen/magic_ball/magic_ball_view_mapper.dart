@@ -21,6 +21,7 @@ class _MagicBallViewMapper implements MagicBallViewMapper {
       screenData.imageBall,
       screenData.color,
       screenData.chooseColorImageBall,
+      screenData.textAnimation,
     );
   }
 }

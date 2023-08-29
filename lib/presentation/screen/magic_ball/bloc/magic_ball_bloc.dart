@@ -30,6 +30,7 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
         hasDarkTheme ? imageDarkBall : imageLightBall,
         hasDarkTheme ? darkColorBall : lightColorBall,
         screenData.chooseColorImageBall,
+        screenData.textAnimation,
       );
       emit(MagicBallInitialState(data: screenData));
     });
@@ -47,6 +48,7 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
           screenData.imageBall,
           screenData.color,
           screenData.chooseColorImageBall,
+          screenData.textAnimation,
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {
@@ -62,6 +64,7 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
           hasDarkTheme ? imageLightBall : imageDarkBall,
           hasDarkTheme ? lightColorBall : darkColorBall,
           screenData.chooseColorImageBall,
+          screenData.textAnimation,
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {
@@ -76,6 +79,22 @@ class MagicBallBloc extends Bloc<MagicBallEvent, MagicBallState> {
           screenData.imageBall,
           screenData.color,
           event.ballColor,
+          screenData.textAnimation,
+        );
+        emit(MagicBallSuccessState(screenData));
+      } catch (error) {
+        emit(MagicBallFailedState(error.toString()));
+      }
+    });
+
+    on<ChangeTextAnimationMagicBallColorScreenEvent>((event, emit) async {
+      try {
+        screenData = MagicBallScreenData(
+          screenData.reading,
+          screenData.imageBall,
+          screenData.color,
+          screenData.chooseColorImageBall,
+          event.textAnimation,
         );
         emit(MagicBallSuccessState(screenData));
       } catch (error) {

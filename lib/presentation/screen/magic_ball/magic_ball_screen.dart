@@ -9,6 +9,7 @@ import 'package:shake/shake.dart';
 import 'package:text_to_speech/text_to_speech.dart';
 import '../../../domain/interactor/magic_ball_interactor.dart';
 import '../bloc/theme_bloc.dart';
+import '../widjets/animatiedText.dart';
 import 'bloc/magic_ball_bloc.dart';
 import 'magic_ball_view_mapper.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -84,6 +85,18 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
 
   @override
   Widget build(BuildContext context) {
+    Color getColor(Set<MaterialState> states) {
+      const Set<MaterialState> interactiveStates = <MaterialState>{
+        MaterialState.pressed,
+        MaterialState.hovered,
+        MaterialState.focused,
+      };
+      if (states.any(interactiveStates.contains)) {
+        return Colors.blue;
+      }
+      return Colors.red;
+    }
+
     final isMobile = MediaQuery.of(context).size.shortestSide < 600;
     final size = MediaQuery.of(context).size;
     //for adaptation when phone is vertical or horizontal
@@ -97,10 +110,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
     final bigEllipseSize = imageSize * 0.656;
 
     return BlocProvider(
-      create: (context) => MagicBallBloc(
-        GetIt.I.get<MagicBallInteractor>(),
-        GetIt.I.get<MagicBallViewMapper>(),
-      )..add(InitMagicBallScreenEvent()),
+      create: (context) => GetIt.I.get<MagicBallBloc>()..add(InitMagicBallScreenEvent()),
       child: BlocConsumer<MagicBallBloc, MagicBallState>(
         listener: (context, state) {
           if (state is MagicBallInitialState) {
@@ -198,9 +208,7 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                                           SizedBox(width: size.width * 0.1),
                                           Text(
                                             isMusicEnable ? 'On' : 'Off',
-                                            style: TextStyle(
-                                              color: Colors.black,
-                                            ),
+                                            style: const TextStyle(color: Colors.black),
                                           ),
                                         ],
                                       ),
@@ -244,6 +252,144 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                                           const Text(
                                             'Change color of ball',
                                             style: TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  bool isChecked1 = false;
+                                                  bool isChecked2 = false;
+                                                  bool isChecked3 = false;
+                                                  return StatefulBuilder(builder: (changeContext, changeSetState) {
+                                                    return AlertDialog(
+                                                      title: const Text('Choose animation of text!'),
+                                                      content: SingleChildScrollView(
+                                                        child: Column(
+                                                          children: [
+                                                            Row(
+                                                              children: <Widget>[
+                                                                SizedBox(
+                                                                  width: size.width * 0.5,
+                                                                  child: AnimatedTextKit(
+                                                                    repeatForever: true,
+                                                                    isRepeatingAnimation: true,
+                                                                    animatedTexts: [
+                                                                      TypewriterAnimatedText(
+                                                                        'TypewriterAnimatedText',
+                                                                        textStyle: const TextStyle(fontSize: 17.0),
+                                                                        speed: const Duration(milliseconds: 150),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Checkbox(
+                                                                  checkColor: Colors.green,
+                                                                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                                                                  value: isChecked1,
+                                                                  onChanged: (val) {
+                                                                    changeSetState(() {
+                                                                      isChecked1 = !isChecked1;
+                                                                      if (isChecked3) isChecked3 = !isChecked3;
+                                                                      if (isChecked2) isChecked2 = !isChecked2;
+                                                                      bloc.add(ChangeTextAnimationMagicBallColorScreenEvent('TypewriterAnimatedText'));
+                                                                    });
+                                                                  },
+                                                                ), //Checkbox
+                                                              ], //<Widget>[]
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                SizedBox(
+                                                                  width: size.width * 0.5,
+                                                                  child: AnimatedTextKit(
+                                                                    repeatForever: true,
+                                                                    isRepeatingAnimation: true,
+                                                                    animatedTexts: [
+                                                                      TyperAnimatedText(
+                                                                        'TyperAnimatedText',
+                                                                        textStyle: const TextStyle(fontSize: 17.0),
+                                                                        speed: const Duration(milliseconds: 150),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Checkbox(
+                                                                  checkColor: Colors.green,
+                                                                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                                                                  value: isChecked2,
+                                                                  onChanged: (val) {
+                                                                    changeSetState(() {
+                                                                      isChecked2 = !isChecked2;
+                                                                      if (isChecked1) isChecked1 = !isChecked1;
+                                                                      if (isChecked3) isChecked3 = !isChecked3;
+                                                                      bloc.add(ChangeTextAnimationMagicBallColorScreenEvent('TyperAnimatedText'));
+                                                                    });
+                                                                  },
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            Row(
+                                                              children: <Widget>[
+                                                                SizedBox(
+                                                                  width: size.width * 0.5,
+                                                                  child: AnimatedTextKit(
+                                                                    repeatForever: true,
+                                                                    isRepeatingAnimation: true,
+                                                                    animatedTexts: [
+                                                                      ScaleAnimatedText(
+                                                                        'ScaleAnimatedText',
+                                                                        textStyle: const TextStyle(fontSize: 17.0),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Checkbox(
+                                                                  checkColor: Colors.green,
+                                                                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                                                                  value: isChecked3,
+                                                                  onChanged: (val) {
+                                                                    changeSetState(
+                                                                      () {
+                                                                        isChecked3 = !isChecked3;
+                                                                        if (isChecked1) isChecked1 = !isChecked1;
+                                                                        if (isChecked2) isChecked2 = !isChecked2;
+                                                                        bloc.add(ChangeTextAnimationMagicBallColorScreenEvent('ScaleAnimatedText'));
+                                                                      },
+                                                                    );
+                                                                  },
+                                                                ), //Checkbox
+                                                              ], //<Widget>[]
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      actions: <Widget>[
+                                                        ElevatedButton(
+                                                          child: const Text('Got it'),
+                                                          onPressed: () {
+                                                            /* isChooseColor = true;
+                                                          currentColor = pickerColor;
+                                                          bloc.add(ChangeImageMagicBallColorScreenEvent(currentColor));
+                                                          */
+                                                            Navigator.of(context).pop();
+                                                          },
+                                                        ),
+                                                      ],
+                                                    );
+                                                  });
+                                                },
+                                              );
+                                            },
+                                            child: const Icon(
+                                              size: 30,
+                                              Icons.text_format,
                                               color: Colors.black,
                                             ),
                                           ),
@@ -336,128 +482,111 @@ class MagicBallScreenState extends State<MagicBallScreen> with TickerProviderSta
                     child: Column(
                       children: [
                         SizedBox(height: (centerOfBall - (imageSize * 0.5)).abs()),
-                        Builder(builder: (context) {
-                          final mainWidget = InkWell(
-                            splashColor: Colors.transparent,
-                            child: SlideTransition(
-                              position: _offsetAnimation,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: <Widget>[
-                                  if (BlocProvider.of<MagicBallBloc>(context).screenData.imageBall.isNotEmpty)
-                                    Image.asset(
-                                      BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
-                                      height: imageSize,
-                                      width: imageSize,
-                                      color: (state is MagicBallSuccessState && isChooseColor) ? state.data.chooseColorImageBall : null,
-                                    ),
-                                  AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 500),
-                                    opacity: isFailed ? 1 : 0,
-                                    child: Container(
-                                      height: smallStarSize,
-                                      width: smallStarSize,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(smallStarSize / 2),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFFDA1319),
-                                            blurRadius: isMobile ? 30 : 60,
-                                            offset: const Offset(1, 1), // Shadow position
-                                          ),
-                                        ],
+                        Builder(
+                          builder: (context) {
+                            final mainWidget = InkWell(
+                              splashColor: Colors.transparent,
+                              child: SlideTransition(
+                                position: _offsetAnimation,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: <Widget>[
+                                    if (BlocProvider.of<MagicBallBloc>(context).screenData.imageBall.isNotEmpty)
+                                      Image.asset(
+                                        BlocProvider.of<MagicBallBloc>(context).screenData.imageBall,
+                                        height: imageSize,
+                                        width: imageSize,
+                                        color: (state is MagicBallSuccessState && isChooseColor) ? state.data.chooseColorImageBall : null,
                                       ),
-                                    ),
-                                  ),
-                                  AnimatedBuilder(
-                                    animation: _animationController,
-                                    child: SvgPicture.asset(
-                                      'assets/images/small_star.svg',
-                                      height: smallStarSize,
-                                      width: smallStarSize,
-                                    ),
-                                    builder: (context, child) {
-                                      return Transform.rotate(
-                                        angle: 0.5 * pi * _animationController.value,
-                                        child: child,
-                                      );
-                                    },
-                                  ),
-                                  AnimatedBuilder(
-                                    animation: _animationController,
-                                    child: SvgPicture.asset(
-                                      'assets/images/star.svg',
-                                      height: bigStarSize,
-                                      width: bigStarSize,
-                                    ),
-                                    builder: (context, child) {
-                                      return Transform.rotate(
-                                        angle: 0.5 * pi * _animationController.value,
-                                        child: child,
-                                      );
-                                    },
-                                  ),
-                                  AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 500),
-                                    opacity: isLoading ? 1 : 0,
-                                    child: Container(
-                                      height: smallStarSize,
-                                      width: smallStarSize,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(smallStarSize / 2),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: boxShadowColor,
-                                            blurRadius: isMobile ? 30 : 60,
-                                            offset: const Offset(1, 1), // Shadow position
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: smallStarSize,
-                                    child: AnimatedTextKit(
-                                      animatedTexts: [
-                                        TypewriterAnimatedText(
-                                          state is MagicBallSuccessState ? state.data.reading : '',
-                                          textStyle: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: isMobile ? 32 : 56,
-                                            height: 1.125,
-                                            //maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),speed: const Duration(milliseconds: 150),
-
-                                          textAlign: TextAlign.center,
-
+                                    AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 500),
+                                      opacity: isFailed ? 1 : 0,
+                                      child: Container(
+                                        height: smallStarSize,
+                                        width: smallStarSize,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(smallStarSize / 2),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFDA1319),
+                                              blurRadius: isMobile ? 30 : 60,
+                                              offset: const Offset(1, 1), // Shadow position
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                      totalRepeatCount: 1,
-
-                                      onTap: () {
-                                        print("Tap Event");
+                                      ),
+                                    ),
+                                    AnimatedBuilder(
+                                      animation: _animationController,
+                                      child: SvgPicture.asset(
+                                        'assets/images/small_star.svg',
+                                        height: smallStarSize,
+                                        width: smallStarSize,
+                                      ),
+                                      builder: (context, child) {
+                                        return Transform.rotate(
+                                          angle: 0.5 * pi * _animationController.value,
+                                          child: child,
+                                        );
                                       },
                                     ),
-                                  )
-                                ],
+                                    AnimatedBuilder(
+                                      animation: _animationController,
+                                      child: SvgPicture.asset(
+                                        'assets/images/star.svg',
+                                        height: bigStarSize,
+                                        width: bigStarSize,
+                                      ),
+                                      builder: (context, child) {
+                                        return Transform.rotate(
+                                          angle: 0.5 * pi * _animationController.value,
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                    AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 500),
+                                      opacity: isLoading ? 1 : 0,
+                                      child: Container(
+                                        height: smallStarSize,
+                                        width: smallStarSize,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(smallStarSize / 2),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: boxShadowColor,
+                                              blurRadius: isMobile ? 30 : 60,
+                                              offset: const Offset(1, 1), // Shadow position
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    AnimatedTextWidget(
+                                      state is MagicBallSuccessState ? state.data.reading : '',
+                                      state is MagicBallSuccessState ? state.data.textAnimation : '',
+                                      isMobile,
+                                      smallStarSize,
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            onTap: () {
-                              if (!isLoading) {
-                                BlocProvider.of<MagicBallBloc>(context).add(LoadMagicBallScreenEvent());
-                              }
-                            },
-                          );
-                          if (state is MagicBallLoadingState) {
-                            return SlideTransition(
-                              position: _offsetAnimationShake,
-                              child: mainWidget,
+                              onTap: () {
+                                if (!isLoading) {
+                                  BlocProvider.of<MagicBallBloc>(context).add(LoadMagicBallScreenEvent());
+                                }
+                              },
                             );
-                          } else {
-                            return mainWidget;
-                          }
-                        }),
+                            if (state is MagicBallLoadingState) {
+                              return SlideTransition(
+                                position: _offsetAnimationShake,
+                                child: mainWidget,
+                              );
+                            } else {
+                              return mainWidget;
+                            }
+                          },
+                        ),
                       ],
                     ),
                   ),

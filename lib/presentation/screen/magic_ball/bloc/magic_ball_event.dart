@@ -14,3 +14,9 @@ class ChangeImageMagicBallColorScreenEvent extends MagicBallEvent {
 
   ChangeImageMagicBallColorScreenEvent(this.ballColor);
 }
+
+class ChangeTextAnimationMagicBallColorScreenEvent extends MagicBallEvent {
+  final String textAnimation;
+
+  ChangeTextAnimationMagicBallColorScreenEvent(this.textAnimation);
+}
